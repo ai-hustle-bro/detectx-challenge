@@ -40,7 +40,42 @@ pip install -r requirements.txt
 ```
 
 ### 3. Prepare Data
-Ensure your images are in the `data/train` and `data/test` folders, and `labels_train.csv` is in the `data/` directory.
+If your source images are already organized as one folder per class, use
+`prepare_data.py` to create the competition layout automatically:
+
+```bash
+python prepare_data.py path/to/folder_per_class_dataset --output-dir data --overwrite
+```
+
+Example input:
+
+```text
+raw_dataset/
+  Cats/
+    cat_001.jpg
+    cat_002.jpg
+  Dogs/
+    dog_001.jpg
+    dog_002.jpg
+```
+
+The script writes:
+
+- `data/train/`: copied training images
+- `data/test/`: copied test images
+- `data/labels_train.csv`: `image_id,label` training labels
+- `data/secret_ground_truth.csv`: held-out test labels for organizers
+- `data/label_map.json`: class-name to integer-label mapping
+
+By default, `20%` of each class is held out for the test split. Adjust it with:
+
+```bash
+python prepare_data.py path/to/folder_per_class_dataset --test-ratio 0.3 --seed 123 --output-dir data --overwrite
+```
+
+If your data is already in competition format, ensure your images are in the
+`data/train` and `data/test` folders, and `labels_train.csv` is in the `data/`
+directory.
 
 ### 4. Training
 To train the baseline model, run:
