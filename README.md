@@ -65,7 +65,7 @@ The script writes:
 - `data/test/`: copied test images
 - `data/labels_train.csv`: `image_id,label` training labels
 - `data/secret_ground_truth.csv`: held-out test labels for organizers
-- `data/label_map.json`: class-name to integer-label mapping
+- `data/label_map.json`: integer-label to class-name mapping
 
 By default, `20%` of each class is held out for the test split. Adjust it with:
 

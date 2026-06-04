@@ -1,10 +1,11 @@
+"""Prepare folder-per-class image datasets for the DetectX competition layout."""
+
 import argparse
 import csv
 import json
 import random
 import shutil
 from pathlib import Path
-
 
 IMAGE_EXTENSIONS = {
     ".jpeg",
@@ -14,6 +15,7 @@ IMAGE_EXTENSIONS = {
 
 
 def parse_args():
+    """Parse command-line arguments for the dataset preparation utility."""
     parser = argparse.ArgumentParser(
         description=(
             "Convert a folder-per-class image dataset into the DetectX "
@@ -52,6 +54,7 @@ def parse_args():
 
 
 def find_class_dirs(source_dir):
+    """Return sorted class directories from a folder-per-class dataset."""
     if not source_dir.exists() or not source_dir.is_dir():
         raise ValueError(f"source_dir is not a directory: {source_dir}")
 
@@ -62,6 +65,7 @@ def find_class_dirs(source_dir):
 
 
 def find_images(class_dir):
+    """Return supported image files under a class directory."""
     return sorted(
         path
         for path in class_dir.rglob("*")
@@ -70,6 +74,7 @@ def find_images(class_dir):
 
 
 def split_images(images, test_ratio, rng):
+    """Split one class of images into deterministic train and test subsets."""
     shuffled = list(images)
     rng.shuffle(shuffled)
 
@@ -86,6 +91,7 @@ def split_images(images, test_ratio, rng):
 
 
 def reset_output_dir(output_dir, overwrite):
+    """Create fresh train/test output directories."""
     if output_dir.exists():
         if not overwrite:
             raise FileExistsError(
@@ -98,6 +104,7 @@ def reset_output_dir(output_dir, overwrite):
 
 
 def copy_split(images, split_dir, split_name, label_id, start_index):
+    """Copy split images and return CSV label rows plus the next image index."""
     rows = []
     index = start_index
     for image_path in images:
@@ -109,6 +116,7 @@ def copy_split(images, split_dir, split_name, label_id, start_index):
 
 
 def write_labels(path, rows):
+    """Write image label rows using the competition CSV schema."""
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=["image_id", "label"])
         writer.writeheader()
@@ -116,6 +124,7 @@ def write_labels(path, rows):
 
 
 def prepare_dataset(source_dir, output_dir, test_ratio, seed, overwrite):
+    """Convert a folder-per-class dataset into the DetectX competition format."""
     class_dirs = find_class_dirs(source_dir)
     reset_output_dir(output_dir, overwrite)
 
@@ -131,7 +140,7 @@ def prepare_dataset(source_dir, output_dir, test_ratio, seed, overwrite):
         if not images:
             raise ValueError(f"No supported images found in class directory: {class_dir}")
 
-        label_map[class_dir.name] = label_id
+        label_map[label_id] = class_dir.name
         train_images, test_images = split_images(images, test_ratio, rng)
 
         rows, train_index = copy_split(
@@ -168,6 +177,7 @@ def prepare_dataset(source_dir, output_dir, test_ratio, seed, overwrite):
 
 
 def main():
+    """Run the dataset preparation command-line workflow."""
     args = parse_args()
     summary = prepare_dataset(
         source_dir=args.source_dir,
